@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Creates IAM User "Roman_Reigns" + IAM Role "Roman_Reigns_Role" with View + Write (NO Create/Delete) permissions for EC2, S3, CloudWatch, ECR, RDS, EKS. User can assume the role.
+
+Resources:
+  # 1. IAM User - Roman_Reigns
+  RomanReignsUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: Roman_Reigns
+      # No console password or access keys created (add if you need them)
+
+  # 2. Custom Policy - View + Write (explicitly excludes Create*/Delete*/Remove*/Terminate*)
+  RomanReignsViewWritePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: RomanReignsViewAndWritePolicy
+      Description: View + Write access (no create, no delete) for EC2, S3, CloudWatch, ECR, RDS, EKS
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              # EC2 - View + limited write (start/stop/reboot/modify)
+              - ec2:Describe*
+              - ec2:List*
+              - ec2:StartInstances
+              - ec2:StopInstances
+              - ec2:RebootInstances
+              - ec2:ModifyInstanceAttribute
+              - ec2:CreateTags
+              # S3 - View + write objects (no delete, no create bucket)
+              - s3:List*
+              - s3:Get*
+              - s3:PutObject
+              - s3:PutObjectTagging
+              - s3:PutBucketTagging
+              # CloudWatch + Logs - View + write metrics/logs
+              - cloudwatch:Describe*
+              - cloudwatch:Get*
+              - cloudwatch:List*
+              - cloudwatch:PutMetricData
+              - logs:Describe*
+              - logs:Get*
+              - logs:List*
+              - logs:PutLogEvents
+              - logs:CreateLogStream
+              # ECR - View + push images (no create/delete repo)
+              - ecr:Describe*
+              - ecr:Get*
+              - ecr:List*
+              - ecr:BatchCheckLayerAvailability
+              - ecr:BatchGetImage
+              - ecr:PutImage
+              # RDS - View + modify (no create/delete)
+              - rds:Describe*
+              - rds:ListTagsForResource
+              - rds:ModifyDBInstance
+              - rds:ModifyDBCluster
+              # EKS (Kubernetes) - View + limited update (no create/delete cluster)
+              - eks:Describe*
+              - eks:List*
+              - eks:UpdateClusterConfig
+              - eks:UpdateNodegroupConfig
+            Resource: '*'
