@@ -1,0 +1,25 @@
+# Ignore terraform working directories in ALL subfolders
+**/.terraform/
+
+# Ignore state files everywhere
+**/*.tfstate
+**/*.tfstate.*
+*.tfstate.backup
+*.tfstate
+
+# Crash logs
+**/crash.log
+
+# Plan files
+**/*.tfplan
+**/*.plan
+**/*-plan.txt
+
+# Optional: variables (if sensitive)
+# **/*.tfvars
+**/*.terraform.tfstate.lock.info
+**/.**/.terraform/
+**/*.exe
+*.exe
+**/.windsurf/
+**/.vscode/*
