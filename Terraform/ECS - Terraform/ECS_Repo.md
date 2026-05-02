@@ -1,3 +1,5 @@
+ECS-Terraform File Structure
+```
 ecs-terraform/
 ├── main.tf                 # Root orchestration (calls modules)
 ├── variables.tf
@@ -16,3 +18,4 @@ ecs-terraform/
 │   └── prod/
 │       └── terraform.tfvars
 └── .terraform.lock.hcl
+```
