@@ -67,5 +67,4 @@ resource "<TYPE>" "<LABEL>" {
         <SPECIFIC_CONNECTION_SETTINGS>
         }
     }
-    }
 }
