@@ -9,6 +9,7 @@ resource "<TYPE>" "<LABEL>" {
         "<VALUE>",
         "<VALUE>"
     ]
+    # Removed duplicate for_each block - only one for_each can be used per resource
     provider = <REFERENCE.TO.ALIAS>
     lifecycle {
         action_trigger {
@@ -67,3 +68,4 @@ resource "<TYPE>" "<LABEL>" {
         }
     }
     }
+}
