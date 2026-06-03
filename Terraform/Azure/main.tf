@@ -1,16 +1,16 @@
     ## main.tf
 
     resource "azurerm_linux_virtual_machine" "dev_eu_north_ubuntu_vm" {
-    name                            = "dev-eu-north-ubuntu2204-vm"
-    resource_group_name             = azurerm_resource_group.dev_eu_north_rg.name
-    location                        = azurerm_resource_group.dev_eu_north_rg.location
-    size                            = "Standard_F2"
-    admin_username                  = "itzaadiiiii"
+    name                = "dev-eu-north-ubuntu2204-vm"
+    resource_group_name = azurerm_resource_group.dev_eu_north_rg.name
+    location            = azurerm_resource_group.dev_eu_north_rg.location
+    size                = "Standard_F2"
+    admin_username      = "itzaadiiiii"
     #admin_password                  = "G<7€YraRgk_7lnksE}yu37`Fe"
     disable_password_authentication = true
     admin_ssh_key {
-        username       = "itzaadiiiii"
-        public_key     = file("/Users/adity/.ssh/azuressh.pub")
+        username   = "itzaadiiiii"
+        public_key = file("/Users/adity/.ssh/azuressh.pub")
     }
 
     network_interface_ids = [
@@ -38,7 +38,7 @@
     ip_configuration {
         name                          = "internal"
         subnet_id                     = azurerm_subnet.dev_eu_north_public_subnet.id
-        private_ip_address_allocation = "Dynamic"
+        private_ip_address_allocation = "Basic"
         public_ip_address_id          = azurerm_public_ip.dev_eu_north_static_public_ip.id
     }
     depends_on = [azurerm_network_security_group.dev_eu_north_ssh_nsg, azurerm_public_ip.dev_eu_north_static_public_ip]
@@ -78,5 +78,5 @@
     resource "azurerm_network_interface_security_group_association" "dev_eu_north_nsg_nic_association" {
     network_interface_id      = azurerm_network_interface.dev_eu_north_nic.id
     network_security_group_id = azurerm_network_security_group.dev_eu_north_ssh_nsg.id
-    depends_on = [azurerm_network_interface.dev_eu_north_nic]
+    depends_on                = [azurerm_network_interface.dev_eu_north_nic]
     }
