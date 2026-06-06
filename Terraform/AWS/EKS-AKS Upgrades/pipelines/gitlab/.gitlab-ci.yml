@@ -1,0 +1,84 @@
+variables:
+  TF_ROOT: "infrastructure/live/dr"
+  CLUSTER_NAME: "fintech-dr-secondary-01"
+  RESOURCE_GROUP: "rg-fintech-dr-01"
+
+stages:
+  - pre-check
+  - plan
+  - approve
+  - apply
+  - post-check
+  - rollback
+
+.auth_azure: &auth_azure
+  - az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
+  - az account set --subscription $ARM_SUBSCRIPTION_ID
+  - az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME --overwrite-existing
+
+pre-flight:
+  stage: pre-check
+  script:
+    - *auth_azure
+    - chmod +x scripts/validate_cluster.sh
+    - ./scripts/validate_cluster.sh $CLUSTER_NAME pre
+  tags:
+    - aks-runner
+
+terraform-plan:
+  stage: plan
+  script:
+    - cd $TF_ROOT
+    - terraform init
+    - terraform plan -out=tfplan
+  artifacts:
+    paths:
+      - $TF_ROOT/tfplan
+    expire_in: 1 day
+  tags:
+    - aks-runner
+
+waiting-for-approval:
+  stage: approve
+  script:
+    - echo "Waiting for manual approval..."
+  when: manual
+  allow_failure: false
+  only:
+    - main
+
+upgrade-cluster:
+  stage: apply
+  script:
+    - cd $TF_ROOT
+    - terraform apply -input=false tfplan
+  dependencies:
+    - terraform-plan
+  tags:
+    - aks-runner
+
+rotate-nodes:
+  stage: apply
+  needs: ["upgrade-cluster"]
+  script:
+    - *auth_azure
+    - chmod +x scripts/drain_nodes.sh
+    # Drain logic specifically for AKS if different, or unified script
+    - ./scripts/drain_nodes.sh $CLUSTER_NAME aks
+  tags:
+    - aks-runner
+
+post-flight:
+  stage: post-check
+  script:
+    - *auth_azure
+    - ./scripts/validate_cluster.sh $CLUSTER_NAME post
+  tags:
+    - aks-runner
+
+rollback-job:
+  stage: rollback
+  script:
+    - *auth_azure
+    - ./scripts/rollback.sh $CLUSTER_NAME
+  when: on_failure

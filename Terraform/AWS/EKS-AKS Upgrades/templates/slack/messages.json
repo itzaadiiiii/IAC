@@ -1,0 +1,92 @@
+{
+  "start": {
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "🚀 Kubernetes Upgrade Started"
+        }
+      },
+      {
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Cluster:*\n${CLUSTER_NAME}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Environment:*\n${ENVIRONMENT}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Target Version:*\n${VERSION}"
+          }
+        ]
+      }
+    ]
+  },
+  "approval": {
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "⚠️ Approval Required"
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "Terraform Plan generated for *${CLUSTER_NAME}*. Please review and approve deployment to Production."
+        },
+        "accessory": {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "View Plan"
+          },
+          "url": "${JENKINS_URL}/job/${JOB_NAME}/${BUILD_NUMBER}/artifact/tfplan.json"
+        }
+      }
+    ]
+  },
+  "success": {
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "✅ Upgrade Successful"
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "Cluster *${CLUSTER_NAME}* has been upgraded to *${VERSION}*. All nodes rotated. Smoke tests passed."
+        }
+      }
+    ]
+  },
+  "failure": {
+    "blocks": [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "❌ Upgrade FAILED"
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "Critical failure in *${CLUSTER_NAME}*. Rollback script initiated.\n*Error Logs:* <${JENKINS_URL}|View Jenkins Logs>"
+        }
+      }
+    ]
+  }
+}

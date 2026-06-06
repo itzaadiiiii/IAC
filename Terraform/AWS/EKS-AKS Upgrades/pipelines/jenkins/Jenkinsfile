@@ -1,0 +1,109 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_REGION = 'us-east-1'
+        TF_WORKING_DIR = 'infrastructure/live/prod'
+        CLUSTER_NAME = 'fintech-prod-primary-01'
+        SLACK_CHANNEL = '#ops-alerts'
+    }
+
+    options {
+        timestamps()
+        timeout(time: 2, unit: 'HOURS')
+    }
+
+    stages {
+        stage('Pre-Flight Checks') {
+            steps {
+                script {
+                    slackSend(channel: SLACK_CHANNEL, color: 'good', message: "🚀 EKS Upgrade Started: ${CLUSTER_NAME}")
+                    
+                    // 1. Vault Authentication (Implicit via Jenkins Plugin or script)
+                    sh "echo 'Authenticating with Vault...'"
+                    
+                    // 2. Validate current cluster health
+                    sh "chmod +x scripts/validate_cluster.sh"
+                    sh "./scripts/validate_cluster.sh ${CLUSTER_NAME} pre"
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                dir("${TF_WORKING_DIR}") {
+                    sh 'terraform init'
+                    sh 'terraform plan -out=tfplan'
+                    sh 'terraform show -json tfplan > tfplan.json'
+                }
+                // Archive plan for audit
+                archiveArtifacts artifacts: "${TF_WORKING_DIR}/tfplan", fingerprint: true
+            }
+        }
+
+        stage('Approval Gate') {
+            when {
+                branch 'main'
+            }
+            steps {
+                script {
+                    slackSend(channel: SLACK_CHANNEL, color: 'warning', message: "⚠️ Approval Needed: EKS Upgrade ${CLUSTER_NAME}")
+                    input message: 'Approve EKS Control Plane Upgrade?', ok: 'Deploy'
+                }
+            }
+        }
+
+        stage('Upgrade Control Plane') {
+            steps {
+                dir("${TF_WORKING_DIR}") {
+                    // Apply Control Plane changes first (Terraform handles dependencies, 
+                    // but sometimes targeted apply is safer for strict separation)
+                    sh 'terraform apply -input=false tfplan'
+                }
+            }
+        }
+
+        stage('Wait for Control Plane') {
+            steps {
+                // Wait for API to be stable
+                sleep 60
+                sh "aws eks wait cluster-active --name ${CLUSTER_NAME} --region ${AWS_REGION}"
+            }
+        }
+
+        stage('Rotate Worker Nodes') {
+            steps {
+                script {
+                    // 1. Terraform has already created NEW Node Groups (due to immutable design)
+                    // 2. We need to drain OLD Node Groups
+                    
+                    sh "chmod +x scripts/drain_nodes.sh"
+                    sh "./scripts/drain_nodes.sh ${CLUSTER_NAME}"
+                }
+            }
+        }
+
+        stage('Post-Flight Validation') {
+            steps {
+                script {
+                    sh "./scripts/validate_cluster.sh ${CLUSTER_NAME} post"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            slackSend(channel: SLACK_CHANNEL, color: 'good', message: "✅ EKS Upgrade Successful: ${CLUSTER_NAME}")
+        }
+        failure {
+            slackSend(channel: SLACK_CHANNEL, color: 'danger', message: "❌ EKS Upgrade FAILED: ${CLUSTER_NAME}. Check logs!")
+            // Trigger Rollback Job or Logic
+            script {
+                echo "Initiating Rollback procedures..."
+                sh "chmod +x scripts/rollback.sh"
+                sh "./scripts/rollback.sh ${CLUSTER_NAME} failure"
+            }
+        }
+    }
+}

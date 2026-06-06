@@ -1,0 +1,38 @@
+############################
+# TERRAFORM (CRITICAL)
+############################
+**/.terraform/
+**/.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
+
+############################
+# KUBERNETES
+############################
+*.kubeconfig
+.kube/
+
+############################
+# CI/CD & SECRETS
+############################
+.env
+.env.*
+secrets/
+credentials/
+
+############################
+# OS / EDITOR
+############################
+.DS_Store
+Thumbs.db
+*.swp
+*.log
+
+############################
+# BUILD / BINARIES
+############################
+*.exe
+*.zip
+*.tar
+*.tgz
