@@ -193,4 +193,10 @@ terraform init
 terraform plan
 ```
 
-If authentication is configured correctly, Terraform will successfully connect to the Azure subscription using the Service Principal credentials.
+If authentication is configured correctly, Terraform will successfully connect to the Azure subscription using the Service Principal credentials
+---
+
+## Security best practices
+
+**Security Note:**
+Never commit ARM_CLIENT_SECRET values to source control. Store secrets in a secure solution such as Azure Key Vault, GitHub Actions Secrets, Azure DevOps Variable Groups, or your organization's secret-management platform.
