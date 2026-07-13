@@ -1,20 +1,5 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "6.54.0"
-    }
-  }
-}
+resource "aws_iam_user" "iam_user" {
+  for_each = [ for user in local.users : user ]
 
-provider "aws" {
-  # Configuration options
-  region = "ap-south-1"   #Mumbai
-  alias = "Primary"
-}
-
-provider "aws" {
-  # Configuration options
-  region = "ap-south-2"    #Hydrabad
-  alias = "Secondary"
+  name = "each.value"
 }

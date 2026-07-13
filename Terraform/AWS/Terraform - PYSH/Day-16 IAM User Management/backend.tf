@@ -1,9 +1,10 @@
 # Added S3 for Backend
 terraform {
   backend "s3" {
-    bucket       = "terraform-bucketttttt"
+    # bucket       = var.tf_backend_bucket
+    bucket = "terraform-buckettttttttt"
     key          = "Terraform-State"
-    region       = "us-east-1"
+    region       = "ap-south-1"   #Mumbai
     use_lockfile = true
   }
 }
