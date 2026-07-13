@@ -3,3 +3,7 @@
 
 
 # variable "vpc_id" {}
+variable "bucket_name" {
+  type        = string
+  description = "Name of the S3 bucket to host the static website"
+}
