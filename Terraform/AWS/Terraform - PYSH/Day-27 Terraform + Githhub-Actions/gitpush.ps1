@@ -2,12 +2,6 @@
 # Git Auto Push Script
 # ============================
 
-# # Check if current directory is a Git repository
-# if (-not (Test-Path ".git")) {
-#     Write-Host "❌ This is not a Git repository." -ForegroundColor Red
-#     exit
-# }
-
 # Ask for commit message
 $commitMessage = Read-Host "Enter commit message"
 
