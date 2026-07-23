@@ -1,4 +1,13 @@
 variable "vpc_cidr" {
   type        = string
-  default     = "10.0.0.0/16"
+  # default     = "10.0.0.0/16"
+}
+
+variable "primary" {
+    default = "us-east-1"
+}
+
+variable "secondary" {
+    type = string
+    default = "us-west-2"
 }

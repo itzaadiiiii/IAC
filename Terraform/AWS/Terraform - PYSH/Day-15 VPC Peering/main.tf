@@ -10,3 +10,8 @@ provider "aws" {
   region = "ap-south-1"
   alias = var.primary
 }
+
+provider "aws" {
+    region = "us-west-2"
+    alias = var.secondary
+}
