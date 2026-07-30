@@ -23,3 +23,4 @@
 *.exe
 **/.windsurf/
 **/.vscode/*
+**/*.dot
