@@ -35,8 +35,8 @@ resource "aws_security_group" "allow_ssh" {
 
 resource "aws_instance" "web" {
     ami           = data.aws_ami.latest.id
-    instance_type = "t2.micro"
-    key_name      = "my-key" # Replace with your key name
+    instance_type = var.instance_type
+    key_name      = var.key_name
     security_groups = [aws_security_group.allow_ssh.name]
 
 
