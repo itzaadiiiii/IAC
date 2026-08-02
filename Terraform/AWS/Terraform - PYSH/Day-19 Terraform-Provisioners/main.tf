@@ -52,3 +52,4 @@ resource "aws_instance" "web" {
     }
 }   
 
+#Make sure you create the key pair in AWS and replace "my-key" and the private key path with your actual key name and path. This code will create an EC2 instance with the latest Ubuntu AMI, allow SSH access, and connect to it using the specified SSH key. and follow the instructions inside README.md for further steps.
