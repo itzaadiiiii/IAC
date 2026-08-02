@@ -32,3 +32,23 @@ resource "aws_security_group" "allow_ssh" {
         cidr_blocks = ["0.0.0.0/0"]
     }
 }
+
+resource "aws_instance" "web" {
+    ami           = data.aws_ami.latest.id
+    instance_type = "t2.micro"
+    key_name      = "my-key" # Replace with your key name
+    security_groups = [aws_security_group.allow_ssh.name]
+
+
+        connection {
+            type        = "ssh"
+            user        = "ubuntu"
+            private_key = file("~/.ssh/my-key.pem") # Replace with your private key path
+            host        = self.public_ip
+        }
+
+    tags = {
+        Name = "Terraform-Example"
+    }
+}   
+
