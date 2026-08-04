@@ -1,7 +1,7 @@
-def COLOR_MAP = (
-    SUCCESS = "good",
-    FAILURE = "danger"
-    )
+def COLOR_MAP = [
+    SUCCESS: "good",
+    FAILURE: "danger"
+]
 
 
 
@@ -20,39 +20,46 @@ pipeline {
     stages {
         stage("Git checkout"){
             steps {
-                sh 'echo "Clonning code"'
+                sh 'echo "Cloning code"'
                 git  url: "https://github.com/hkhcoder/vprofile-project.git", branch: "atom"
             }
         }
 
         stage("Compile Code"){
             steps {
-                sh 'mvn compile"
+                sh '''
+                    mvn compile
+                '''
             }
         }
 
 
-        stage("Build"){
+        stage("Package"){
             steps {
-                sh 'mvn package'
-
+                sh '''
+                    mvn package
+                '''
             }
         }
 
 
-        stage("Test'){
+        stage ("Unit Test"){
             steps {
-                sh 'mvn test'
+                sh '''
+                    mvn test
+                '''
             }
         }
 
-        stage("Build"){
+        stage("Build and Deploy"){
             steps {
-                sh 'mvn install -DskipTest=True'
+                sh '''
+                    mvn install
+                '''
             }
             post {
                 success {
-                    archieveArtifacts: "**/target/*.war"
+                    archiveArtifacts artifacts: '**/target/*.war'
                 }
             }
         }
