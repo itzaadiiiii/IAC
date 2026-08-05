@@ -9,8 +9,8 @@ pipeline {
     agent any
 
     tools {
-        MAVEN "mvn 3.9"
-        JDK "JDK 17"
+        MAVEN 'mvn 3.9'
+        JDK 'JDK 17'
 
     }
 
@@ -21,7 +21,7 @@ pipeline {
         stage("Git checkout"){
             steps {
                 sh 'echo "Cloning code"'
-                git  url: "https://github.com/hkhcoder/vprofile-project.git", branch: "atom"
+                git  url: 'https://github.com/hkhcoder/vprofile-project.git', branch: "atom"
             }
         }
 
