@@ -33,6 +33,8 @@ resource "aws_security_group" "allow_ssh" {
     }
 }
 
+
+#Create an EC2 instance using the latest Ubuntu AMI and allow SSH access using the specified key pair. The instance will be tagged with the name "Terraform-Example".
 resource "aws_instance" "web" {
     ami           = data.aws_ami.latest.id
     instance_type = var.instance_type
