@@ -41,18 +41,24 @@ resource "aws_instance" "web" {
     ami           = data.aws_ami.latest.id
     instance_type = var.instance_type
     key_name      = var.key_name
-    security_groups = [aws_security_group.allow_ssh.name]
+    security_groups = [
+        aws_security_group.allow_ssh.name
+        ]
 
 
-        connection {
-            type        = "ssh"
-            user        = "ubuntu"
-            private_key = file("~/.ssh/my-key.pem") # Replace with your private key path
-            host        = self.public_ip
-        }
+    connection {
+        type        = "ssh"
+        user        = "ubuntu"
+        private_key = file("~/.ssh/my-key.pem") # Replace with your private key path
+        host        = self.public_ip
+    }
 
     tags = {
         Name = "Terraform-Example"
+    }
+
+    provisioner "local-exec" {
+        command = "echo 'Local-exec provisioner: Instance created with Instance ID: ${self.id}, and Public IP: ${self.public_ip}'"
     }
 }   
 
