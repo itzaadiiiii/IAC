@@ -1,3 +1,4 @@
+# Lets fetch the latest Ubuntu AMI from AWS using the aws_ami data source. This will ensure that we are always using the most up-to-date version of Ubuntu for our EC2 instance.
 data "aws_ami" "latest" {
     most_recent = true
 
@@ -14,6 +15,7 @@ data "aws_ami" "latest" {
     owners = ["099720109469"] # Canonical
 }
 
+# Create a security group to allow SSH access to the EC2 instance. This security group will allow inbound traffic on port 22 (SSH) from any IP address (
 resource "aws_security_group" "allow_ssh" {
     name        = "allow_ssh"
     description = "Allow SSH inbound traffic"
