@@ -67,6 +67,11 @@ resource "aws_instance" "web" {
             "echo Hello from remote-exec provisioner | sudo tee /tmp/remote-exec.txt"
         ]
     }
+
+    provisioner "file" {
+        source      = "${path.module}/Day-19 Terraform-Provisioners/welcome.sh" # Replace with your local file path
+        destination = "/tmp/welcome.sh"   #You can change the destination path as needed
+    }
 }   
 
 #Make sure you create the key pair in AWS and replace "my-key" and the private key path with your actual key name and path. This code will create an EC2 instance with the latest Ubuntu AMI, allow SSH access, and connect to it using the specified SSH key. and follow the instructions inside README.md for further steps.
