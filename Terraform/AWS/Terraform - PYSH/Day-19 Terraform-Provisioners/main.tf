@@ -72,6 +72,15 @@ resource "aws_instance" "web" {
         source      = "${path.module}/Day-19 Terraform-Provisioners/welcome.sh" # Replace with your local file path
         destination = "/tmp/welcome.sh"   #You can change the destination path as needed
     }
+
+# The remote-exec provisioner is used to execute commands on the remote EC2 instance. In this case, we are making the welcome.sh script executable and then running it. You can modify the commands as needed.
+    provisioner "remote-exec" {
+        inline = [
+            "chmod +x /tmp/welcome.sh",
+            "/tmp/welcome.sh"
+        ]
+    }
 }   
+
 
 #Make sure you create the key pair in AWS and replace "my-key" and the private key path with your actual key name and path. This code will create an EC2 instance with the latest Ubuntu AMI, allow SSH access, and connect to it using the specified SSH key. and follow the instructions inside README.md for further steps.
