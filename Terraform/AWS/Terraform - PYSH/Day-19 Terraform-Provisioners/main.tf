@@ -60,6 +60,13 @@ resource "aws_instance" "web" {
     provisioner "local-exec" {
         command = "echo 'Local-exec provisioner: Instance created with Instance ID: ${self.id}, and Public IP: ${self.public_ip}'"
     }
+
+    provisioner "remote-exec" {
+        inline = [
+            "sudo apt-get update -y",
+            "echo Hello from remote-exec provisioner | sudo tee /tmp/remote-exec.txt"
+        ]
+    }
 }   
 
 #Make sure you create the key pair in AWS and replace "my-key" and the private key path with your actual key name and path. This code will create an EC2 instance with the latest Ubuntu AMI, allow SSH access, and connect to it using the specified SSH key. and follow the instructions inside README.md for further steps.
