@@ -67,7 +67,7 @@ resource "aws_instance" "web" {
             "echo Hello from remote-exec provisioner | sudo tee /tmp/remote-exec.txt"
         ]
     }
-
+# The file provisioner is used to copy files from the local machine to the remote EC2 instance. In this case, we are copying a script named welcome.sh from the local module path to the /tmp directory on the EC2 instance. You can modify the source and destination paths as needed.
     provisioner "file" {
         source      = "${path.module}/Day-19 Terraform-Provisioners/welcome.sh" # Replace with your local file path
         destination = "/tmp/welcome.sh"   #You can change the destination path as needed
