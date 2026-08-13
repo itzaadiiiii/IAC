@@ -9,3 +9,12 @@ variable "name_prefix" {
     type        = string
     default     = "myapp"
 }
+
+#Add Internet Gateway
+resource "aws_internet_gateway" "main" {
+    vpc_id = aws_vpc.main.id
+
+    tags = {
+        Name = "${var.name_prefix}-igw"
+    }
+}
