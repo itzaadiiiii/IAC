@@ -21,3 +21,9 @@ variable "public_subnet_az" {
     type        = string
     default     = data.aws_availability_zones.available.names[0]
 }   
+
+variable "private_subnet_cidr" {
+    description = "The CIDR block for the private subnet"
+    type        = string
+    default     = data.aws_availability_zones.available.names[1]
+}
