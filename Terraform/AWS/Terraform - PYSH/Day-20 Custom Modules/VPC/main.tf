@@ -4,6 +4,9 @@ resource "aws_vpc" "main" {
     enable_dns_hostnames = true
 
     tags = {
-        Name = var.vpc_name
+        Name = merge(var.tags, 
+        {
+            Name = "${var.name_prefix}-vpc"
+        })
     }
 }
