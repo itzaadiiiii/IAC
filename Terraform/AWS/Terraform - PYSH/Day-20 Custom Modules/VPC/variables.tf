@@ -19,5 +19,5 @@ variable "public_subnet_cidr" {
 variable "public_subnet_az" {
     description = "The availability zone for the public subnet"
     type        = string
-    default     = "ap-south-1a"
+    default     = data.aws_availability_zones.available.names[0]
 }   
