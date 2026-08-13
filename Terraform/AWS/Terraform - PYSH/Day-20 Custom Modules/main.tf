@@ -1,4 +1,13 @@
-# If we apply the VPC you can fetch the AVAILABILITY ZONES using the below data source. This will help us to create subnets in different availability zones.
-data "aws_availability_zones" "available" { 
-    state = "available"
-}   
+module "vpc" {
+    source = "./VPC"
+    vpc_cidr = var.cidr_block
+    name_prefix = "myapp"
+    azs = slice(data.aws_availability_zones.available.names, 0, 2)
+    public_subnet_cidr = var.public_subnet_cidr
+    private_subnet_cidr = var.private_subnet_cidr
+
+    enable_dns_support = true
+    enable_dns_hostnames = true
+    tags = {
+        Environment = "dev"
+    }                      
