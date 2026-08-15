@@ -4,6 +4,18 @@ variable "cidr_block" {
     default     = "10.0.0.0/16"
 }
 
+variable "name_prefix" {
+    description = "The name prefix for the VPC"
+    type        = string
+    default     = "myapp"
+}
+
+variable "azs" {
+    description = "The availability zones for the VPC"
+    type        = list(string)
+    default     = []
+}
+
 variable "public_subnet_cidr" {
     description = "The CIDR block for the public subnet"
     type        = string

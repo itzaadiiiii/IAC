@@ -1,15 +1,30 @@
+# Custom VPC Module
 module "vpc" {
-    source = "./VPC"
-    vpc_cidr = var.cidr_block
-    name_prefix = "myapp"
-    azs = slice(data.aws_availability_zones.available.names, 0, 2)
-    public_subnet_cidr = var.public_subnet_cidr
-    public_subnet_az = data.aws_availability_zones.available.names[0]
-    private_subnet_cidr = var.private_subnet_cidr
+    source = "./modules/vpc"
 
-    enable_dns_support = true
-    enable_dns_hostnames = true
+    name_prefix     = var.cluster_name
+    vpc_cidr        = var.vpc_cidr
+    azs             = slice(data.aws_availability_zones.available.names, 0, 3)
+    private_subnets = var.private_subnets
+    public_subnets  = var.public_subnets
+
+    enable_nat_gateway = true
+    single_nat_gateway = true
+
+    # Required tags for EKS
+    public_subnet_tags = {
+        "kubernetes.io/role/elb"                    = "1"
+        "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    }
+
+    private_subnet_tags = {
+        "kubernetes.io/role/internal-elb"           = "1"
+        "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    }
+
     tags = {
-        Environment = "dev"
-    }                      
-
+        Environment = var.environment
+        Terraform   = "true"
+        Project     = "EKS-Day20"
+    }
+}
