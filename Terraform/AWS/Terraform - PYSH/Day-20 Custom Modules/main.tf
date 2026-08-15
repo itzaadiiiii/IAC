@@ -28,3 +28,17 @@ module "vpc" {
         Project     = "EKS-Day20"
     }
 }
+
+
+# Custom IAM Module
+module "iam" {
+    source = "./modules/iam"
+
+    cluster_name = var.cluster_name
+
+    tags = {
+        Environment = var.environment
+        Terraform   = "true"
+        Project     = "EKS-Day20"
+    }
+}
