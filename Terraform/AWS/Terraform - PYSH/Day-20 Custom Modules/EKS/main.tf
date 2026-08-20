@@ -13,3 +13,16 @@ resource "aws_kms_key" "eks" {
         }
     )
 }
+
+resource "aws_kms_alias" "eks" {
+    name          = "alias/${var.cluster_name}-eks"
+    target_key_id = aws_kms_key.eks.key_id
+}
+
+# CloudWatch Log Group for EKS
+resource "aws_cloudwatch_log_group" "eks" {
+    name              = "/aws/eks/${var.cluster_name}/cluster"
+    retention_in_days = 7
+
+    tags = var.tags
+}
