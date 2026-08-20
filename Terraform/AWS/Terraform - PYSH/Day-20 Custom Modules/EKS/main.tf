@@ -52,3 +52,30 @@ resource "aws_security_group" "cluster" {
         create_before_destroy = true
     }
 }
+
+# Node Security Group
+resource "aws_security_group" "node" {
+    name_prefix = "${var.cluster_name}-node-sg-"
+    description = "Security group for EKS worker nodes"
+    vpc_id      = var.vpc_id
+
+    egress {
+        from_port   = 0
+        to_port     = 0
+        protocol    = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+        description = "Allow all outbound traffic"
+    }
+
+    tags = merge(
+        var.tags,
+        {
+        Name                                        = "${var.cluster_name}-node-sg"
+        "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+        }
+    )
+
+    lifecycle {
+        create_before_destroy = true
+    }
+}
