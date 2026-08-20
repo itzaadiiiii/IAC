@@ -162,3 +162,16 @@ resource "aws_iam_openid_connect_provider" "cluster" {
         }
     )
 }
+
+# EKS Addons
+resource "aws_eks_addon" "coredns" {
+    cluster_name                = aws_eks_cluster.main.name
+    addon_name                  = "coredns"
+    addon_version               = var.coredns_version != "" ? var.coredns_version : null
+    resolve_conflicts_on_create = "OVERWRITE"
+    resolve_conflicts_on_update = "OVERWRITE"
+
+    depends_on = [aws_eks_node_group.main]
+
+    tags = var.tags
+}
