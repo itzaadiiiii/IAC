@@ -175,3 +175,13 @@ resource "aws_eks_addon" "coredns" {
 
     tags = var.tags
 }
+
+resource "aws_eks_addon" "kube_proxy" {
+    cluster_name                = aws_eks_cluster.main.name
+    addon_name                  = "kube-proxy"
+    addon_version               = var.kube_proxy_version != "" ? var.kube_proxy_version : null
+    resolve_conflicts_on_create = "OVERWRITE"
+    resolve_conflicts_on_update = "OVERWRITE"
+
+    tags = var.tags
+}
