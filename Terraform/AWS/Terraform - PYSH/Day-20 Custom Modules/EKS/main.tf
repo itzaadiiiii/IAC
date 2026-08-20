@@ -79,3 +79,26 @@ resource "aws_security_group" "node" {
         create_before_destroy = true
     }
 }
+
+# Allow nodes to communicate with cluster API
+resource "aws_security_group_rule" "node_to_cluster" {
+    type                     = "ingress"
+    from_port                = 443
+    to_port                  = 443
+    protocol                 = "tcp"
+    security_group_id        = aws_security_group.cluster.id
+    source_security_group_id = aws_security_group.node.id
+    description              = "Allow nodes to communicate with cluster API"
+}
+
+# Allow cluster API to communicate with nodes
+resource "aws_security_group_rule" "cluster_to_node" {
+    type                     = "ingress"
+    from_port                = 1025
+    to_port                  = 65535
+    protocol                 = "tcp"
+    security_group_id        = aws_security_group.node.id
+    source_security_group_id = aws_security_group.cluster.id
+    description              = "Allow cluster control plane to communicate with nodes"
+}
+
