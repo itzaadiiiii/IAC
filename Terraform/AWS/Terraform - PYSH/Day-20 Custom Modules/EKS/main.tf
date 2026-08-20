@@ -102,3 +102,13 @@ resource "aws_security_group_rule" "cluster_to_node" {
     description              = "Allow cluster control plane to communicate with nodes"
 }
 
+# Allow nodes to communicate with each other
+resource "aws_security_group_rule" "node_to_node" {
+    type              = "ingress"
+    from_port         = 0
+    to_port           = 65535
+    protocol          = "-1"
+    security_group_id = aws_security_group.node.id
+    self              = true
+    description       = "Allow nodes to communicate with each other"
+}
