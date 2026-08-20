@@ -112,3 +112,33 @@ resource "aws_security_group_rule" "node_to_node" {
     self              = true
     description       = "Allow nodes to communicate with each other"
 }
+
+# EKS Cluster
+resource "aws_eks_cluster" "main" {
+    name     = var.cluster_name
+    version  = var.kubernetes_version
+    role_arn = var.cluster_role_arn
+
+    vpc_config {
+        subnet_ids              = var.subnet_ids
+        endpoint_public_access  = var.endpoint_public_access
+        endpoint_private_access = var.endpoint_private_access
+        public_access_cidrs     = var.public_access_cidrs
+        security_group_ids      = [aws_security_group.cluster.id]
+    }
+
+    encryption_config {
+        provider {
+        key_arn = aws_kms_key.eks.arn
+        }
+        resources = ["secrets"]
+    }
+
+    enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+
+    depends_on = [
+        aws_cloudwatch_log_group.eks
+    ]
+
+    tags = var.tags
+}
