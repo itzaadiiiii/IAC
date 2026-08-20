@@ -196,3 +196,57 @@ resource "aws_eks_addon" "vpc_cni" {
 
     tags = var.tags
 }
+
+# Launch Template for Node Groups
+resource "aws_launch_template" "node" {
+    for_each = var.node_groups
+
+    name_prefix = "${var.cluster_name}-${each.key}-"
+    description = "Launch template for ${var.cluster_name} ${each.key} node group"
+
+    block_device_mappings {
+        device_name = "/dev/xvda"
+
+        ebs {
+        volume_size           = lookup(each.value, "disk_size", 20)
+        volume_type           = "gp3"
+        iops                  = 3000
+        throughput            = 125
+        delete_on_termination = true
+        encrypted             = true
+        }
+    }
+
+    metadata_options {
+        http_endpoint               = "enabled"
+        http_tokens                 = "required"
+        http_put_response_hop_limit = 2
+        instance_metadata_tags      = "enabled"
+    }
+
+    monitoring {
+        enabled = true
+    }
+
+    network_interfaces {
+        associate_public_ip_address = false
+        delete_on_termination       = true
+        security_groups             = [aws_security_group.node.id]
+    }
+
+    tag_specifications {
+        resource_type = "instance"
+        tags = merge(
+        var.tags,
+        {
+            Name = "${var.cluster_name}-${each.key}-node"
+        }
+        )
+    }
+
+    lifecycle {
+        create_before_destroy = true
+    }
+
+    tags = var.tags
+}
