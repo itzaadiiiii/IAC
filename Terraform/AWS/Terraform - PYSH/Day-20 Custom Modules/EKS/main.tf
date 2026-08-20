@@ -26,3 +26,29 @@ resource "aws_cloudwatch_log_group" "eks" {
 
     tags = var.tags
 }
+
+# Cluster Security Group
+resource "aws_security_group" "cluster" {
+    name_prefix = "${var.cluster_name}-cluster-sg-"
+    description = "Security group for EKS cluster control plane"
+    vpc_id      = var.vpc_id
+
+    egress {
+        from_port   = 0
+        to_port     = 0
+        protocol    = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+        description = "Allow all outbound traffic"
+    }
+
+    tags = merge(
+        var.tags,
+        {
+        Name = "${var.cluster_name}-cluster-sg"
+        }
+    )
+
+    lifecycle {
+        create_before_destroy = true
+    }
+}
