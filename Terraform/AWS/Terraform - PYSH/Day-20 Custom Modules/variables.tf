@@ -1,29 +1,29 @@
 variable "cidr_block" {
-    description = "The CIDR block for the VPC"
-    type        = string
-    default     = "10.0.0.0/16"
+  description = "The CIDR block for the VPC"
+  type        = string
+  default     = "10.0.0.0/16"
 }
 
 variable "name_prefix" {
-    description = "The name prefix for the VPC"
-    type        = string
-    default     = "myapp"
+  description = "The name prefix for the VPC"
+  type        = string
+  default     = "myapp"
 }
 
 variable "azs" {
-    description = "The availability zones for the VPC"
-    type        = list(string)
-    default     = []
+  description = "The availability zones for the VPC"
+  type        = list(string)
+  default     = []
 }
 
 variable "public_subnet_cidr" {
-    description = "The CIDR block for the public subnet"
-    type        = string
-    default     = "10.0.1.0/24"
+  description = "The CIDR block for the public subnet"
+  type        = string
+  default     = "10.0.1.0/24"
 }
 
 variable "private_subnet_cidr" {
-    description = "The CIDR block for the private subnet"
-    type        = string
-    default     = "10.0.2.0/24"
+  description = "The CIDR block for the private subnet"
+  type        = string
+  default     = "10.0.2.0/24"
 }
