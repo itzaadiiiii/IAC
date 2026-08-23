@@ -1,3 +1,10 @@
+resource "random_string" "bucket_suffix" {
+    length  = 6
+    special = false
+    upper   = false
+} 
+
+
 resource "aws_s3_bucket" "config_bucket" {
     bucket = "${var.project_name}-config-bucket"
     acl    = "private"
