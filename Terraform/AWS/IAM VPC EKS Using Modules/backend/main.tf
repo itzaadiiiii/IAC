@@ -1,22 +1,29 @@
 terraform {
     required_providers {
         aws = {
-        source = "hashicorp/aws"
-        # version = "~> 5.0"
-        version = "6.27.0"
+            source  = "hashicorp/aws"
+            version = "6.27.0"
         }
     }
     required_version = ">= 1.14.0"
+
+    backend "s3" {
+        bucket       = "${var.project_name}-backend-buckettt"
+        key          = "Terraform-State"
+        region       = "us-east-1"
+        use_lockfile = true
+    }
 }
 
-resourse "aws_s3_bucket" "config_bucket" {
-    bucket = "${var.project_name}-backend=buckettt"
-    acl    = "private"
+provider "aws" {
+    region = "us-east-1"
 
-    tags = {
-        Name        = "Terraform Config Bucket"
-        Environment = "Governance"
-        Managed_by  = "Terraform"
-        Purpose     = "AWS-Config_Storeage"
+    default_tags {
+        tags = {
+            Name        = "Terraform Config Bucket"
+            Environment = "Governance"
+            Managed_by  = "Terraform"
+            Purpose     = "IAM VPC EKS"
+        }
     }
 }
