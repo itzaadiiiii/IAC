@@ -27,7 +27,7 @@ provider "helm" {
 ]
 }
 
-# 
+# Add the Helm chart for NGINX Ingress Controller
 resource "helm_release" "nginx_ingress" {
 name       = "nginx-ingress-controller"
 repository = "https://charts.bitnami.com/bitnami"
