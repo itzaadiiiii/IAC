@@ -82,3 +82,49 @@ resource "aws_security_group" "terra-import-sg" {
 #         cidr_blocks = ["0.0.0.0/0"]
 #     }
 # }
+
+#Option 2 — Map (better for real projects)
+
+#If you want different descriptions or protocols:
+
+variable "ingress_rules" {
+  default = {
+    ssh = {
+      port        = 22
+      description = "SSH"
+    }
+
+    http = {
+      port        = 80
+      description = "HTTP"
+    }
+
+    https = {
+      port        = 443
+      description = "HTTPS"
+    }
+  }
+}
+
+resource "aws_security_group" "terra_import_sg" {
+  name   = "terra-import-sg"
+  vpc_id = data.aws_vpc.default.id
+
+  dynamic "ingress" {
+    for_each = var.ingress_rules
+
+    content {
+      description = ingress.value.description
+      from_port   = ingress.value.port
+      to_port     = ingress.value.port
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
+}
+
+#Interview answer:
+
+#"Yes, instead of repeating ingress blocks, we can use Terraform's dynamic block with for_each. For simple identical rules, a list of ports is enough; for enterprise configurations where each rule has different attributes, I prefer a map/object structure."
+
+#One important distinction: you can't directly do for_each on an ingress {} block. You use dynamic "ingress" to generate multiple nested ingress blocks.
