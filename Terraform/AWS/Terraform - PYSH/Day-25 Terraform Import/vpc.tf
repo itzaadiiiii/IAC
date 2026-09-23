@@ -54,31 +54,31 @@ resource "aws_security_group" "terra-import-sg" {
         Name = "terra-import-sg"
     }
     }
-# For better coding standards, you can use dynamic blocks to define the ingress and egress rules. This allows you to easily manage multiple rules without duplicating code. Here's an example of how you can use dynamic blocks for the ingress rules:
-variable "ingress_ports" {
-    default = [22, 80, 443]
-}
+# # For better coding standards, you can use dynamic blocks to define the ingress and egress rules. This allows you to easily manage multiple rules without duplicating code. Here's an example of how you can use dynamic blocks for the ingress rules:
+# variable "ingress_ports" {
+#     default = [22, 80, 443]
+# }
 
-resource "aws_security_group" "terra_import_sg" {
-    name   = "terra-import-sg"
-    vpc_id = data.aws_vpc.default.id
+# resource "aws_security_group" "terra_import_sg" {
+#     name   = "terra-import-sg"
+#     vpc_id = data.aws_vpc.default.id
 
-    dynamic "ingress" {
-        for_each = var.ingress_ports
+#     dynamic "ingress" {
+#         for_each = var.ingress_ports
 
-        content {
-        description = "Allow port ${ingress.value}"
-        from_port   = ingress.value
-        to_port     = ingress.value
-        protocol    = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
-        }
-    }
+#         content {
+#         description = "Allow port ${ingress.value}"
+#         from_port   = ingress.value
+#         to_port     = ingress.value
+#         protocol    = "tcp"
+#         cidr_blocks = ["0.0.0.0/0"]
+#         }
+#     }
 
-    egress {
-        from_port   = 0
-        to_port     = 0
-        protocol    = "-1"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-}
+#     egress {
+#         from_port   = 0
+#         to_port     = 0
+#         protocol    = "-1"
+#         cidr_blocks = ["0.0.0.0/0"]
+#     }
+# }
