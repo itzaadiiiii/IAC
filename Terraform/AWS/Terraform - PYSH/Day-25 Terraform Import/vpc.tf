@@ -1,47 +1,56 @@
-variable "vpc_id" {}
-
-data "aws_vpc" "selected" {
-    id = var.vpc_id
+# Get the existing AWS default VPC
+data "aws_vpc" "default" {
+    default = true
 }
 
-# Lets allow ingress for HTTP, HTTPS And SSH traffic from anywhere and all outbound traffic
+variable "vpc_id" {
+    description = "The ID of the VPC to import the security group into"
+    type        = string
+    default     = data.aws_vpc.default.id
+    }
 
-resource "aws_security_group" "allow_tls" {
-    name        = "allow_tls"
-    description = "Allow TLS inbound traffic and all outbound traffic"
-    vpc_id      = data.aws_vpc.selected.id
+# Existing Security Group
+resource "aws_security_group" "terra-import-sg" {
+    name        = "terra-import-sg"
+    description = "Security group managed by Terraform"
+    vpc_id      = data.aws_vpc.default.id
+
+    # SSH - Port 22
+    ingress {
+        description = "SSH"
+        from_port   = 22
+        to_port     = 22
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    # HTTP - Port 80
+    ingress {
+        description = "HTTP"
+        from_port   = 80
+        to_port     = 80
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    # HTTPS - Port 443
+    ingress {
+        description = "HTTPS"
+        from_port   = 443
+        to_port     = 443
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    # Allow all outbound traffic
+    egress {
+        from_port   = 0
+        to_port     = 0
+        protocol    = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
 
     tags = {
-        Name = "allow_tls"
+        Name = "terra-import-sg"
     }
-
-    ingress {
-        from_port        = 443
-        to_port          = 443
-        protocol         = "tcp"
-        cidr_blocks      = ["0.0.0.0/0"]
     }
-    ingress {
-        from_port        = 80
-        to_port          = 80
-        protocol         = "tcp"
-        cidr_blocks      = ["0.0.0.0/0"]
-    }
-    ingress {
-        from_port        = 22
-        to_port          = 22
-        protocol         = "tcp"
-        cidr_blocks      = ["0.0.0.0/0"]
-    }
-
-    egress {
-        from_port        = 0
-        to_port          = 0
-        protocol         = "-1"
-        cidr_blocks      = ["0.0.0.0/0"]
-        # ipv6_cidr_blocks = ["::/0"]
-    }
-}
-
-
-
