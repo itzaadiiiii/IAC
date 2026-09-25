@@ -128,3 +128,16 @@ resource "aws_security_group" "terra-import-sg" {
 #"Yes, instead of repeating ingress blocks, we can use Terraform's dynamic block with for_each. For simple identical rules, a list of ports is enough; for enterprise configurations where each rule has different attributes, I prefer a map/object structure."
 
 #One important distinction: you can't directly do for_each on an ingress {} block. You use dynamic "ingress" to generate multiple nested ingress blocks.
+
+resource "aws_instance" "terra_demo" {
+    ami           = "ami-xxxxxxxxxxxxxxxxx" # Ubuntu 22.04 AMI ID
+    instance_type = "t3.micro"               # change to your actual type
+    key_name = "linux"
+    vpc_security_group_ids = [
+        aws_security_group.terra_import_sg.id
+    ]
+
+    tags = {
+        Name = "terra-demo"
+    }
+}
