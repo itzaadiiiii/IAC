@@ -129,6 +129,8 @@ resource "aws_security_group" "terra-import-sg" {
 
 #One important distinction: you can't directly do for_each on an ingress {} block. You use dynamic "ingress" to generate multiple nested ingress blocks.
 
+
+# Import the AWS Instance created in the AWS console into Terraform state. This allows Terraform to manage the existing resource without recreating it.
 resource "aws_instance" "terra_demo" {
     ami           = "ami-xxxxxxxxxxxxxxxxx" # Ubuntu 22.04 AMI ID
     instance_type = "t3.micro"               # change to your actual type
