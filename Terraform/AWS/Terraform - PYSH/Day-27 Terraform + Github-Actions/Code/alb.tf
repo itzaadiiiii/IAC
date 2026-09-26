@@ -11,21 +11,21 @@ resource "aws_lb" "main" {
 
 # 2. Define the Target Group for backend routing
 resource "aws_lb_target_group" "main" {
-  name        = "main-alb-target-group"
-  port        = 80
-  protocol    = "HTTP"
-  vpc_id      = "vpc-xxxxxxxxxxxxxxxxx" # Replace with your VPC ID
-  target_type = "instance"               # Or "ip" if using ECS Fargate
+    name        = "main-alb-target-group"
+    port        = 80
+    protocol    = "HTTP"
+    vpc_id      = "vpc-xxxxxxxxxxxxxxxxx" # Replace with your VPC ID
+    target_type = "instance"               # Or "ip" if using ECS Fargate
 
-  health_check {
-    enabled             = true
-    path                = "/"
-    port                = "traffic-port"
-    protocol            = "HTTP"
-    healthy_threshold   = 3
-    unhealthy_threshold = 3
-    timeout             = 5
-    interval            = 30
-    matcher             = "200"
-  }
+    health_check {
+        enabled             = true
+        path                = "/"
+        port                = "traffic-port"
+        protocol            = "HTTP"
+        healthy_threshold   = 3
+        unhealthy_threshold = 3
+        timeout             = 5
+        interval            = 30
+        matcher             = "200"
+    }
 }
