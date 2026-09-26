@@ -7,5 +7,15 @@ resource "aws_lb" "main" {
     subnets            = ["subnet-xxxxxxxxxxxxxxxxx", "subnet-yyyyyyyyyyyyyyyyy"] # Replace with your public subnet IDs
 
     enable_deletion_protection = false
+}
+
+# 2. Define the Target Group for backend routing
+resource "aws_lb_target_group" "main" {
+  name        = "main-alb-target-group"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = "vpc-xxxxxxxxxxxxxxxxx" # Replace with your VPC ID
+  target_type = "instance"               # Or "ip" if using ECS Fargate
+
 
 }
