@@ -41,3 +41,17 @@ resource "aws_lb_listener" "http" {
         target_group_arn = aws_lb_target_group.main.arn
     }
 }
+
+# 4. Security Group allowing public HTTP web traffic
+resource "aws_security_group" "alb_sg" {
+    name        = "alb-security-group"
+    description = "Allow inbound HTTP traffic"
+    vpc_id      = "vpc-xxxxxxxxxxxxxxxxx" # Replace with your VPC ID
+
+    ingress {
+        description = "HTTP from anywhere"
+        from_port   = 80
+        to_port     = 80
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
