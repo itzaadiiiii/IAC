@@ -44,3 +44,4 @@ resource "aws_subnet" "private" {
         Name = "${var.name_prefix}-private-subnet"
     }
 }
+
