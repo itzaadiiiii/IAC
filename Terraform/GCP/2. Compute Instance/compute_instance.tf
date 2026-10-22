@@ -1,3 +1,15 @@
+#Lets enable the compute engine API using Terraform itself instead doing it via  console
+resource "google_project_service" "project" {
+    project = "your-project-id"
+    service = "compute.googleapis.com"
+
+    timeouts {
+        create = "30m"
+        update = "40m"
+    }
+}
+
+
 resource "google_compute_instance" "default" {
     name         = "my-instance"
     machine_type = "n2-standard-2"
