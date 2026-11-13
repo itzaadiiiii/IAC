@@ -1,0 +1,16 @@
+# Terraform / Terragrunt
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+.terragrunt-cache/
+tfplan
+plan.txt
+backend.tf
+provider.tf
+
+# OS / Editor
+.DS_Store
+.idea/
+.vscode/
+*.swp

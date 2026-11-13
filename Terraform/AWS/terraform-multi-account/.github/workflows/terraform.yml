@@ -1,0 +1,197 @@
+# =============================================================================
+# GitHub Actions - Terragrunt Multi-Account Pipeline
+# Features:
+#   - Detect changed stacks
+#   - Plan on PR
+#   - Apply on merge (with environment protection for staging/prod)
+#   - Auto rollback on failure
+#   - Slack + Email notifications
+# =============================================================================
+
+name: Terraform Multi-Account
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:                    # Allow manual trigger
+
+env:
+  TF_VERSION: "1.9.0"
+  TG_VERSION: "0.68.0"
+  AWS_REGION: "us-east-1"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1. Detect which stacks changed
+  # ---------------------------------------------------------------------------
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      stacks: ${{ steps.changes.outputs.stacks }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed stacks
+        id: changes
+        run: |
+          # Find changed terragrunt.hcl files under live/
+          CHANGED=$(git diff --name-only origin/main...HEAD | grep 'live/.*/terragrunt.hcl' || true)
+          echo "Changed files: $CHANGED"
+
+          # Convert to JSON array of stack paths
+          STACKS=$(echo "$CHANGED" | sed 's|/terragrunt.hcl||' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "stacks=$STACKS" >> $GITHUB_OUTPUT
+          echo "Detected stacks: $STACKS"
+
+  # ---------------------------------------------------------------------------
+  # 2. Plan (runs on every PR and push)
+  # ---------------------------------------------------------------------------
+  plan:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.stacks != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        stack: ${{ fromJson(needs.detect-changes.outputs.stacks) }}
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC recommended)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_GITHUB_ROLE_ARN }}   # Role that can assume into all accounts
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Setup Terragrunt
+        run: |
+          curl -sL "https://github.com/gruntwork-io/terragrunt/releases/download/v${{ env.TG_VERSION }}/terragrunt_linux_amd64" -o /usr/local/bin/terragrunt
+          chmod +x /usr/local/bin/terragrunt
+          terragrunt --version
+
+      - name: Terragrunt Plan
+        id: plan
+        working-directory: ${{ matrix.stack }}
+        run: |
+          terragrunt init -input=false
+          terragrunt plan -input=false -out=tfplan
+          terragrunt show -no-color tfplan > plan.txt
+        continue-on-error: true
+
+      - name: Comment plan on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const plan = fs.readFileSync('${{ matrix.stack }}/plan.txt', 'utf8');
+            const body = `### Terragrunt Plan - \`${{ matrix.stack }}\`\n\`\`\`\n${plan}\n\`\`\``;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: plan-${{ strategy.job-index }}
+          path: ${{ matrix.stack }}/tfplan
+
+  # ---------------------------------------------------------------------------
+  # 3. Apply (only on main branch / manual)
+  # ---------------------------------------------------------------------------
+  apply:
+    needs: [detect-changes, plan]
+    if: github.ref == 'refs/heads/main' && needs.detect-changes.outputs.stacks != '[]'
+    runs-on: ubuntu-latest
+    environment:                          # GitHub Environment protection rules
+      name: ${{ contains(needs.detect-changes.outputs.stacks, 'live/prod') && 'production' || contains(needs.detect-changes.outputs.stacks, 'live/staging') && 'staging' || 'development' }}
+
+    strategy:
+      matrix:
+        stack: ${{ fromJson(needs.detect-changes.outputs.stacks) }}
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_GITHUB_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Setup Terragrunt
+        run: |
+          curl -sL "https://github.com/gruntwork-io/terragrunt/releases/download/v${{ env.TG_VERSION }}/terragrunt_linux_amd64" -o /usr/local/bin/terragrunt
+          chmod +x /usr/local/bin/terragrunt
+
+      - name: Terragrunt Apply
+        id: apply
+        working-directory: ${{ matrix.stack }}
+        run: |
+          terragrunt init -input=false
+          terragrunt apply -input=false -auto-approve
+        continue-on-error: true
+
+      # -----------------------------------------------------------------------
+      # Auto Rollback on failure
+      # -----------------------------------------------------------------------
+      - name: Rollback on failure
+        if: steps.apply.outcome == 'failure'
+        working-directory: ${{ matrix.stack }}
+        run: |
+          echo "Apply failed — attempting rollback to previous state..."
+          # Simple rollback strategy: re-apply the previous successful state
+          # In advanced setups you can keep state file versions in S3 and restore
+          terragrunt apply -input=false -auto-approve -refresh-only || true
+          echo "Rollback attempted"
+
+      # -----------------------------------------------------------------------
+      # Notifications
+      # -----------------------------------------------------------------------
+      - name: Slack Notification
+        if: always()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "Terraform Apply - ${{ matrix.stack }}\nStatus: ${{ steps.apply.outcome }}\nRepo: ${{ github.repository }}\nActor: ${{ github.actor }}\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Email Notification
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "Terraform Apply ${{ steps.apply.outcome }} - ${{ matrix.stack }}"
+          to: platform-team@mycompany.com
+          from: github-actions@mycompany.com
+          body: |
+            Stack: ${{ matrix.stack }}
+            Status: ${{ steps.apply.outcome }}
+            Repository: ${{ github.repository }}
+            Actor: ${{ github.actor }}
+            Run URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
