@@ -1,8 +1,3 @@
-provider "google" {
-    project = "my-project-id"
-    region  = "us-central1"
-}
-
 resource "google_storage_bucket" "static_bucket" {
     name          = "globally-unique-bucket-name-12345"
     location      = "US"

@@ -5,7 +5,7 @@ terraform {
         version = "8.12.0"
         }
     }
-    }
+    } 
 
     provider "google" {
     # Configuration options
